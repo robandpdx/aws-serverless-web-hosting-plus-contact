@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  DomainName:
+    Description: Name of the domain
+    Type: String
+    Default: ericksonapartments.com
+    ConstraintDescription: must be the name of an existing Hosted Zone in Route53.
+  HostName:
+    Description: Hostname part of the URL for the website.
+    Type: String
+    Default: test
+  HostedZoneId:
+    Description: Hosted Zone ID needed for SSL certificate validation.
+    Type: String
+    Default: Z33VHQIJYZI635
+Resources:
+  cloudFrontS3IndexHtml:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-cloudFrontS3IndexHtml
+      Description: CloudFront S3 index.html edge lambda
+      Handler: index.handler
+      CodeUri: src/cloudFrontS3IndexHtml
+      Runtime: nodejs12.x
+      Timeout: 5
+      AutoPublishAlias: riznob
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+  mySSLCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Sub '${HostName}.${DomainName}'
+      DomainValidationOptions:
+      - DomainName: !Sub '${HostName}.${DomainName}'
+        HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+Outputs:
+  SSLCertificateArn:
+    Description: SSL Certificate ARN
+    Value: !Ref mySSLCertificate
+  EdgeLambdaArn:
+    Description: Edge Lambda ARN
+    Value: !Ref cloudFrontS3IndexHtml.Version

@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Continuous Delivery
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+
+    - name: Running npm install and installing gulp
+      run: |
+        cd web
+        npm install
+        npm install --global gulp
+    - name: Running gulp
+      run: |
+        cd web
+        gulp
+      
+    - name: S3 Sync
+      uses: jakejarvis/s3-sync-action@v0.5.1
+      with:
+        args: --delete --exclude 'scss/*' --exclude 'node_modules/*' --exclude package.json --exclude package-lock.json --exclude requirements.txt --exclude gulpfile.js
+      env:
+        AWS_S3_BUCKET: <s3-bucket>
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: <region>
+        SOURCE_DIR: web
+    - name: Invalidate Cloudfront
+      uses: chetan/invalidate-cloudfront-action@v1.2
+      env:
+        DISTRIBUTION: <cloudfront-dist-id>
+        PATHS: '/*'
+        AWS_REGION: <region>
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

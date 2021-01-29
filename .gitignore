@@ -1,0 +1,6 @@
+.aws-sam
+samconfig.toml
+node_modules
+vendor
+*.min.js
+css

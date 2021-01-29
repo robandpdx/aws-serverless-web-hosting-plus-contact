@@ -1,0 +1,9 @@
+{
+    "name": "contact-us-form-processor",
+    "description": "Contact us form processor",
+    "version": "1.0.0",
+    "author": "Rob Anderson <riznob@gmail.com>",
+    "license": "GNU GPLv3",
+    "dependencies": {
+    }
+}

@@ -1,0 +1,247 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  DomainName:
+    Description: Name of the domain
+    Type: String
+    ConstraintDescription: must be the name of an existing Hosted Zone in Route53.
+  HostName:
+    Description: Hostname part of the URL for the website.
+    Type: String
+  HostedZoneId:
+    Description: Hosted Zone ID needed for SSL certificate validation.
+    Type: String
+  Subject:
+    Type: String
+    Description: Contact us email subject
+  ToEmailAddress:
+    Type: String
+    Description: Email address you want contact form submittions to go to
+  ReCaptchaClientSecret:
+    Type: String
+    Description: Your Google reCAPTCHA client secret
+  ReCaptchaServerSecret:
+    Type: String
+    Description: Your Google reCAPTCHA server secret
+  EdgeLambdaArn:
+    Type: String
+    Description: Edge Lambda ARN for index pages
+    Default: None
+  SSLCertificateArn:
+    Type: String
+    Description: SSL Certificate ARN
+    Default: None
+Conditions:
+  IsUsEast1: !Equals 
+    - !Ref AWS::Region
+    - us-east-1
+Resources:
+  ContactUsSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - ' Topic'
+      Subscription:
+        - Endpoint: !Ref ToEmailAddress
+          Protocol: email
+      TopicName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-topic'
+  ContactUsFunctionApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+  ContactUsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-contactUsFormProcessor
+      Description: Contact us form processor
+      Handler: index.handler
+      CodeUri: src/contactUsFormProcessor
+      Runtime: nodejs12.x
+      Timeout: 5
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt ContactUsSNSTopic.TopicName
+      Events:
+        PostEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ContactUsFunctionApi
+            Path: /
+            Method: post
+      Environment:
+        Variables:
+          ReCaptchaSecret: !Ref ReCaptchaServerSecret
+          ContactUsSNSTopic: !Ref ContactUsSNSTopic
+          Subject: !Ref Subject
+  CloudFrontS3IndexHtml:
+    Type: AWS::Serverless::Function
+    Condition: IsUsEast1
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-cloudFrontS3IndexHtml
+      Description: CloudFront S3 index.html edge lambda
+      Handler: index.handler
+      CodeUri: src/cloudFrontS3IndexHtml
+      Runtime: nodejs12.x
+      Timeout: 5
+      AutoPublishAlias: riznob
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+  DeploymentLayer:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location:
+        ApplicationId: arn:aws:serverlessrepo:us-east-1:375983427419:applications/deploy-to-s3
+        SemanticVersion: 2.4.2
+  SiteSource:
+    Type: AWS::Serverless::Function
+    Properties:
+      Layers:
+        - !GetAtt DeploymentLayer.Outputs.Arn
+      CodeUri: web/
+      AutoPublishAlias: live
+      Runtime: python3.6
+      Handler: deployer.resource_handler
+      Timeout: 600
+      Policies:
+        - S3FullAccessPolicy:
+            BucketName: !Ref S3Bucket
+  DeploymentResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt SiteSource.Arn
+      Version: !Ref "SiteSource.Version"
+      TargetBucket: !Ref S3Bucket
+
+      Substitutions:
+        FilePattern: "*.html"
+        Values:
+          CONTACT_API: !Ref ContactUsFunctionApi
+          REGION: !Ref AWS::Region
+          CAPTCHA_SITE_KEY: !Ref ReCaptchaClientSecret
+          CANONICAL_URL: !Sub https://${HostName}.${DomainName}/
+      Acl: 'private'
+      CacheControlMaxAge: 600
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:  
+        Statement:  
+        - Action: 's3:GetObject'
+          Effect: "Allow"  
+          Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
+          Principal: 
+            AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontDistributionOriginAccessIdentity}" 
+  SSLCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Sub '${HostName}.${DomainName}'
+      DomainValidationOptions:
+      - DomainName: !Sub '${HostName}.${DomainName}'
+        HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+  CloudFrontDistributionOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties: 
+      CloudFrontOriginAccessIdentityConfig: 
+        Comment: !Sub ${AWS::StackName}-access-identity
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName: !GetAtt S3Bucket.DomainName
+          Id: !Ref S3Bucket
+          S3OriginConfig:
+            OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontDistributionOriginAccessIdentity}
+        Enabled: 'true'
+        HttpVersion: http2
+        Aliases:
+        - !Sub ${HostName}.${DomainName}
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          TargetOriginId: !Ref S3Bucket
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          LambdaFunctionAssociations:
+          - EventType: origin-request
+            LambdaFunctionARN: !If [IsUsEast1, !Ref CloudFrontS3IndexHtml.Version, !Ref EdgeLambdaArn]
+        ViewerCertificate:
+          AcmCertificateArn: !If [IsUsEast1, !Ref SSLCertificate, !Ref SSLCertificateArn]
+          SslSupportMethod: sni-only
+  DNSRecord:
+    Type: 'AWS::Route53::RecordSetGroup'
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      RecordSets:
+        - Name: !Sub '${HostName}.${DomainName}.'
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2
+            DNSName: !GetAtt CloudFrontDistribution.DomainName
+  DeployUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub ${AWS::StackName}-deploy
+      Path: "/"
+      Policies:
+      - PolicyName: cloudfront-s3-readwrite
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - cloudfront:CreateInvalidation
+            Resource:
+            - "*"
+          - Effect: Allow
+            Action:
+            - s3:ListBucket
+            Resource: !Sub 'arn:aws:s3:::{S3Bucket}'
+          - Effect: Allow
+            Action:
+            - s3:DeleteObject
+            - s3:GetObject
+            - s3:GetObjectAcl
+            - s3:PutObject
+            - s3:PutObjectAcl
+            Resource: !Sub 'arn:aws:s3:::{S3Bucket}/*'
+Outputs:
+  ApiUrl:
+    Description: URL of your API endpoint
+    Value: !Sub "https://${ContactUsFunctionApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  CloudFrontDistributionId:
+    Description: CloudFront Distribution ID
+    Value: !Ref CloudFrontDistribution
+  IAMUser:
+    Description: IAM User with permission to deploy
+    Value: !Ref DeployUser
+  S3Bucket:
+    Description: S3 Bucket
+    Value: !Ref S3Bucket
