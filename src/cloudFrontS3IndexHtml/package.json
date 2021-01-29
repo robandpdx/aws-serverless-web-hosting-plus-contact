@@ -3,7 +3,7 @@
     "description": "CloudFront S3 index.html edge lambda",
     "version": "1.0.0",
     "author": "Rob Anderson <riznob@gmail.com>",
-    "license": "GNU GPLv3",
+    "license": "MIT",
     "dependencies": {
     }
 }
