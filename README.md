@@ -12,7 +12,7 @@ This project is all about an AWS cloudformation template that sets up all the ne
 The website this stack will deploy is based on [Start Bootstrap - Freelancer](https://github.com/startbootstrap/startbootstrap-freelancer)
 The cloudformation template uses the [deploy-to-s3 app](https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:375983427419:applications~deploy-to-s3) from the [serverless application repository](https://aws.amazon.com/serverless/serverlessrepo/).
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/BlackrockDigital/startbootstrap-freelancer/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/riznob/aws-serverless-web-hosting-plus-contact/blob/master/LICENSE)
 
 ## Prerequisites
 - [AWS account](https://aws.amazon.com/)
