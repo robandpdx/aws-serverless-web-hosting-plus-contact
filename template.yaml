@@ -223,7 +223,7 @@ Resources:
           - Effect: Allow
             Action:
             - s3:ListBucket
-            Resource: !Sub 'arn:aws:s3:::{S3Bucket}'
+            Resource: !Sub arn:aws:s3:::${S3Bucket}
           - Effect: Allow
             Action:
             - s3:DeleteObject
@@ -231,7 +231,7 @@ Resources:
             - s3:GetObjectAcl
             - s3:PutObject
             - s3:PutObjectAcl
-            Resource: !Sub 'arn:aws:s3:::{S3Bucket}/*'
+            Resource: !Sub arn:aws:s3:::${S3Bucket}/*
 Outputs:
   ApiUrl:
     Description: URL of your API endpoint
