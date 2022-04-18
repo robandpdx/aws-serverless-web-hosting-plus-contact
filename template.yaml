@@ -114,7 +114,7 @@ Resources:
         - !GetAtt DeploymentLayer.Outputs.Arn
       CodeUri: web/
       AutoPublishAlias: live
-      Runtime: python3.6
+      Runtime: python3.7
       Handler: deployer.resource_handler
       Timeout: 600
       Policies:
