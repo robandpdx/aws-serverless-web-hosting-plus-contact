@@ -1,0 +1,23 @@
+{
+	"name": "Python 3.7 Node.js 12 aws sam-cli",
+	"build": {
+		"dockerfile": "Dockerfile",
+	},
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": {},
+
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"dbaeumer.vscode-eslint",
+		"mikestead.dotenv",
+		"mcright.auto-save",
+		"donjayamanne.git-extension-pack",
+		"redhat.vscode-yaml",
+		"github.copilot",
+		"ms-azuretools.vscode-docker"
+	],
+
+	// Setup aws creds via mount
+	"mounts": ["source=${localEnv:HOME}/.aws,target=/home/sam-user/.aws,type=bind,consistency=cached"]
+}
