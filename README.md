@@ -16,18 +16,18 @@ The cloudformation template uses the [deploy-to-s3 app](https://serverlessrepo.a
 
 ## Prerequisites
 - [AWS account](https://aws.amazon.com/)
-- A [hosted zone in Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingHostedZone.html)
-[- GitHub account](https://github.com)
+- [Hosted zone in Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingHostedZone.html)
+- [GitHub account](https://github.com)
 - Setup reCaptcha v2 here: [https://www.google.com/recaptcha/admin](https://www.google.com/recaptcha/admin). Note both the client and server side site keys. See the [recaptcha documentation](https://developers.google.com/recaptcha/docs/invisible) for more details.
 - [AWS sam cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 - [Setup a named profile for sam cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). Let's assume your named profile is called `sidney`.
-- [Node.js](https://nodejs.org/en/)
-- Python 3.7
+- [Node.js v12](https://nodejs.org/en/)
+- [Python 3.7](https://www.python.org/)
 
 ## Deploying to AWS
 There are 2 resources that need to be deployed in us-east-1 region; 1) [SSL/TLS Certificate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html#https-requirements-aws-region), and 2) [edge lambda](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-requirements-limits.html#lambda-requirements-cloudfront-triggers) for SEO. Everything else can be deployed in your region of choice. Therefore, if you want to deploy to any AWS region other than us-east-1, you need to deploy 2 stacks; one stack for the resources that need to be in us-east-1 and another stack in your chosen region. If your region of choice is us-east-1 you need only deploy one stack, and that's a wee bit simpler.
 
-### us-east-1 region only (single stack)
+### us-east-1 region only (single stack, recommended)
 1. run `./prepare.sh` to pull in the vendor code for the website
 1. run `export AWS_PROFILE=sidney`
 1. run `sam build`
@@ -37,6 +37,7 @@ Leave the `EdgeLambdaArn` and `SSLCertificateArn` blank.
 
 ### If your region of choice is not us-east-1 (two stacks)
 #### Deploy resouces to us-east-1
+1. run `./prepare.sh` to pull in the vendor code for the website
 1. run `export AWS_PROFILE=sidney`
 1. run `sam build -t template-east.yaml`
 1. run `sam deploy -t template-east.yaml --guided`
