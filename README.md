@@ -41,9 +41,31 @@ Leave the `EdgeLambdaArn` and `SSLCertificateArn` blank.
 1. run `export AWS_PROFILE=sidney`
 1. run `sam build -t template-east.yaml`
 1. run `sam deploy -t template-east.yaml --guided`
-2. Note the output values of `SSLCertificateArn` and `EdgeLambdaArn`
-3. run `sam build --use-container`
-4. run `sam deploy --guided --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND`, using the output values of the us-east-1 stack as parameters for this stack.
+1. Note the output values of `SSLCertificateArn` and `EdgeLambdaArn`
+1. run `sam build --use-container`
+1. run `sam deploy --guided --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND`, using the output values of the us-east-1 stack as parameters for this stack.
+1. Refer to the [Stack Parameters](#stack-parameters) section below.
+
+### Stack Parameters
+| Parameter | Description |
+| --------- | ----------- |
+| Stack Name | Name of the stack |
+| AWS Region | Region where stack will be deployed |
+| DomainName | Domain name of hosted zone |
+| HostedZoneId | HostedZoneId found in Route53 |
+| Subject | Subject of the email sent from web form |
+| ToEmailAddress | Email address where web form will send emails |
+| ReCaptchaClientSecret | Get this from reCaptcha |
+| ReCaptchaServerSecret | Get this from reCaptcha |
+| EdgeLambdaArn | Not needed if deploying 1 stack to us-east-1 |
+| SSLCertificateArn | Not needed if deploying 1 stack to us-east-1 |
+| Confirm changes before deploy [y/N]: | N |
+| Allow SAM CLI IAM role creation [Y/n]: | Y |
+| Disable rollback [y/N]: | N |
+| ContactUsFunction may not have authorization defined, Is this okay? [y/N]: | N, Don't worry, we have captcha |
+| Save arguments to configuration file [Y/n]: | Y |
+| SAM configuration file [samconfig.toml]: | Y |
+| SAM configuration environment [default]: | Y |
 
 ## GitHub actions continuous delivery
 Before you setup github actions, go grab the index.html from your S3 bucket and check it into git. During the deploy of the cloudformation template, the API gateway URL and google reCaptcha client key values were put into that file.
