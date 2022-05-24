@@ -1,11 +1,15 @@
 # AWS serverless web hosting + contact form
-This project is all about an AWS cloudformation template that sets up all the necessary infrastructure for serverless web hosting on AWS, including a contact form. There is also a github action to setup continuous delivery. The stack deploys the following:
+So you want to create a static website and host it in [AWS](https://aws.amazon.com/). You want SSL with a cert for your domain, and you want a basic contact form so users can send you an email from the website. You also want to protect that contact form from spam by using [Google reCaptcha](https://www.google.com/recaptcha/). Well, to make this all happen you need to configure the following [AWS](https://aws.amazon.com/) services: [Route53, S3](https://aws.amazon.com/route53/), [CloudFront](https://aws.amazon.com/cloudfront/), [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/), [SNS](https://aws.amazon.com/sns/), [Lambda](https://aws.amazon.com/lambda/), [API Gateway](https://aws.amazon.com/api-gateway/), and [IAM](https://aws.amazon.com/iam/). That's a bit overwhelming, just for a simple static website!
 
-- S3 bucket
-- Cloudfront distribution
+This project solves all of this by providing an AWS cloudformation template that sets up all the necessary infrastructure for serverless web hosting on AWS, including a contact form. There is also a github action to setup continuous delivery. The stack deploys the following:
+
+- S3 bucket to host the static web files
+- CloudFront distribution so you can add an SSL/TLS certificate
 - SSL/TLS certificate
-- Route53 record
-- AGI gateway, lambda, sns topic for contact form
+- Route53 record in your hosted zone
+- API gateway to broker the 
+- Lambda funtion to process contact form
+- SNS Topic to send email from the contact form
 - Edge lamda for better SEO
 - IAM user with permissions to deploy from github actions
 
@@ -62,7 +66,7 @@ Leave the `EdgeLambdaArn` and `SSLCertificateArn` blank.
 | Confirm changes before deploy [y/N]: | N |
 | Allow SAM CLI IAM role creation [Y/n]: | Y |
 | Disable rollback [y/N]: | N |
-| ContactUsFunction may not have authorization defined, Is this okay? [y/N]: | N, Don't worry, we have captcha |
+| ContactUsFunction may not have authorization defined, Is this okay? [y/N]: | N, Don't worry, we have reCaptcha |
 | Save arguments to configuration file [Y/n]: | Y |
 | SAM configuration file [samconfig.toml]: | Y |
 | SAM configuration environment [default]: | Y |
