@@ -99,3 +99,6 @@ When you delete the stack it will probably fail to delete. Don't worry. You need
 1. Wait for the edge lambda to undeploy now that your cloudfront distribution had been deleted. Maybe a couple of hours.
 
 After that, try to delete the stack again. It should delete just fine.
+
+## File types
+The `cloudFrontS3IndexHtml` lambda adds `.html` to URLs that don't end in: `.html,.css,.css.map,.js,.json,.gif,.jpg,.jpeg,.png,.svg,.ico,.woff,.ttf,.txt,.xml`. If you are getting 403 errors in your browser while navigating the site, you may need to edit [cloudFrontS3IndexHtml/index.js](src/cloudFrontS3IndexHtml/index.js) to allow the file types you are seeing errors with.
