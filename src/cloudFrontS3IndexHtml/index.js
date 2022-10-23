@@ -13,9 +13,12 @@ exports.handler = (event, context, callback) => {
     //var newuri = newuri.replace(/donate$/, 'donate\/index.html');
     
     if (!newuri.toLowerCase().endsWith(".html") && !newuri.toLowerCase().endsWith(".css")
+                                    && !newuri.toLowerCase().endsWith(".css.map")
                                     && !newuri.toLowerCase().endsWith(".js")
                                     && !newuri.toLowerCase().endsWith(".json")
+                                    && !newuri.toLowerCase().endsWith(".gif")
                                     && !newuri.toLowerCase().endsWith(".jpg")
+                                    && !newuri.toLowerCase().endsWith(".jpeg")
                                     && !newuri.toLowerCase().endsWith(".png")
                                     && !newuri.toLowerCase().endsWith(".svg")
                                     && !newuri.toLowerCase().endsWith(".ico")
