@@ -32,11 +32,10 @@ jobs:
       run: |
         cd web
         npm install
-        npm install --global gulp
-    - name: Running gulp
+    - name: Running build
       run: |
         cd web
-        gulp
+        npm run build
   deploy:
     needs: build
     runs-on: ubuntu-latest
