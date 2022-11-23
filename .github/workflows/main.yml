@@ -38,7 +38,7 @@ jobs:
           env:
               MY_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
   deploy:
-    needs: build
+    needs: check-secret
     runs-on: ubuntu-latest
     if: needs.check-secret.outputs.deploy-secrets == 'true'
     steps:
