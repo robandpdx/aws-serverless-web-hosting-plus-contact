@@ -5,17 +5,17 @@
 function sendData(token) {
     $.post(formUrl, JSON.stringify({
      website: document.location.hostname,
-     name: $("#name").value,
-     email: $("#email").value,
-     phone: $("#phone").value,
-     message: $("#message").value,
+     name: $("#contactForm input[id='name']").val(),
+     email: $("#contactForm input[id='email']").val(),
+     phone: $("#contactForm input[id='phone']").val(),
+     message: $("#contactForm textarea[id='message']").val(),
      'g-recaptcha-response': token
    }), function (data) {
       $("#submitSuccessMessage").removeClass("d-none");
-      $("#name").value = ''
-      $("#email").value = ''
-      $("#phone").value = ''
-      $("#message").value = '';
+      $("#contactForm input[id='name']").val('');
+      $("#contactForm input[id='email']").val('');
+      $("#contactForm input[id='phone']").val('');
+      $("#contactForm textarea[id='message']").val('');
     }, 'json');
 }
   
