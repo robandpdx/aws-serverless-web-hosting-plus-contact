@@ -37,7 +37,11 @@ jobs:
       run: |
         cd web
         gulp
-      
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: secrets.AWS_ACCESS_KEY_ID != null
+    steps:
     - name: S3 Sync
       uses: jakejarvis/s3-sync-action@v0.5.1
       with:
