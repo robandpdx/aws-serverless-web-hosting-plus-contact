@@ -112,7 +112,7 @@ Resources:
     Properties:
       Layers:
         - !GetAtt DeploymentLayer.Outputs.Arn
-      CodeUri: web/
+      CodeUri: web/dist
       AutoPublishAlias: live
       Runtime: python3.7
       Handler: deployer.resource_handler

@@ -5,3 +5,4 @@ vendor
 *.min.js
 css
 .DS_Store
+web/dist
