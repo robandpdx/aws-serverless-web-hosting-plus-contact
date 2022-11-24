@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:python3.7-nodejs12
+FROM nikolaik/python-nodejs:python3.7-nodejs18
 
 ARG USERNAME=sam-user
 ARG USER_UID=2000

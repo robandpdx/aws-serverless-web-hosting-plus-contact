@@ -1,5 +1,5 @@
 {
-	"name": "Python 3.7 Node.js 12 aws sam-cli",
+	"name": "Python 3.7 Node.js 18 aws sam-cli",
 	"build": {
 		"dockerfile": "Dockerfile",
 	},

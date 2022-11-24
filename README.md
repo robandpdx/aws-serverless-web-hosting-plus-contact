@@ -25,7 +25,7 @@ The cloudformation template uses the [deploy-to-s3 app](https://serverlessrepo.a
 - Setup reCaptcha v2 here: [https://www.google.com/recaptcha/admin](https://www.google.com/recaptcha/admin). Note both the client and server side site keys. See the [recaptcha documentation](https://developers.google.com/recaptcha/docs/invisible) for more details.
 - [AWS sam cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 - [Setup a named profile for sam cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). Let's assume your named profile is called `sidney`.
-- [Node.js](https://nodejs.org/en/) [v12](https://github.com/nvm-sh/nvm)
+- [Node.js](https://nodejs.org/en/) [v18](https://github.com/nvm-sh/nvm)
 - [Python](https://www.python.org/) [v3.7](https://github.com/pyenv/pyenv)
 
 ## Deploying to AWS
