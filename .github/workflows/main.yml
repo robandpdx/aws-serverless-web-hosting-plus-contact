@@ -3,8 +3,6 @@ name: CI/CD
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -12,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup Node.js environment
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '12'
+        node-version: '18'
 
     - name: Running npm install and installing gulp
       run: |
@@ -51,7 +49,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: <region>
-        SOURCE_DIR: web
+        SOURCE_DIR: web/dist
     - name: Invalidate Cloudfront
       uses: chetan/invalidate-cloudfront-action@v1.2
       env:
