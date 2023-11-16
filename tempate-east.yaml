@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Parameters:
   DomainName:
@@ -37,9 +37,9 @@ Resources:
   mySSLCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties: 
-      DomainName: !Sub '${HostName}.${DomainName}'
+      DomainName: !Sub ${HostName}.${DomainName}
       DomainValidationOptions:
-      - DomainName: !Sub '${HostName}.${DomainName}'
+      - DomainName: !Sub ${HostName}.${DomainName}
         HostedZoneId: !Ref HostedZoneId
       ValidationMethod: DNS
 Outputs:

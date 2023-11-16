@@ -26,7 +26,7 @@ The cloudformation template uses the [deploy-to-s3 app](https://serverlessrepo.a
 - [AWS sam cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 - [Setup a named profile for sam cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). Let's assume your named profile is called `sidney`.
 - [Node.js](https://nodejs.org/en/) [v18](https://github.com/nvm-sh/nvm)
-- [Python](https://www.python.org/) [v3.7](https://github.com/pyenv/pyenv)
+- [Python](https://www.python.org/) [v3.11](https://github.com/pyenv/pyenv)
 
 ## Deploying to AWS
 There are 2 resources that need to be deployed in us-east-1 region; 1) [SSL/TLS Certificate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html#https-requirements-aws-region), and 2) [edge lambda](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-requirements-limits.html#lambda-requirements-cloudfront-triggers) for SEO. Everything else can be deployed in your region of choice. Therefore, if you want to deploy to any AWS region other than us-east-1, you need to deploy 2 stacks; one stack for the resources that need to be in us-east-1 and another stack in your chosen region. If your region of choice is us-east-1 you need only deploy one stack, and that's a wee bit simpler.

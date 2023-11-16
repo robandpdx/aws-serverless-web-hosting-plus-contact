@@ -1,7 +1,7 @@
 {
-	"name": "Python 3.7 Node.js 18 aws sam-cli",
+	"name": "Python 3.11 Node.js 18 aws sam-cli",
 	"build": {
-		"dockerfile": "Dockerfile",
+		"dockerfile": "Dockerfile"
 	},
 
 	// Set *default* container specific settings.json values on container create.
@@ -15,6 +15,7 @@
 		"donjayamanne.git-extension-pack",
 		"redhat.vscode-yaml",
 		"github.copilot",
+		"github.actions",
 		"ms-azuretools.vscode-docker"
 	],
 
