@@ -1,16 +1,16 @@
-var https = require('https');
-var querystring = require('querystring');
-var AWS = require("aws-sdk");
+const https = require('https');
+const querystring = require('querystring');
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
 
 exports.handler = function (event, context, callback) {
     // Validate the recaptcha
-    var input_data = JSON.parse(event.body);
-    var postData = querystring.stringify({
+    const input_data = JSON.parse(event.body);
+    const postData = querystring.stringify({
         'secret': process.env.ReCaptchaSecret,
         'response': input_data['g-recaptcha-response']
     });
 
-    var options = {
+    const options = {
         hostname: 'www.google.com',
         port: 443,
         path: '/recaptcha/api/siteverify',
@@ -20,25 +20,25 @@ exports.handler = function (event, context, callback) {
             'Content-Length': Buffer.byteLength(postData)
         }
     };
-
-    var req = https.request(options, function(res) {
+    const req = https.request(options, function(res) {
         res.setEncoding('utf8');
         res.on('data', function(chunk) {
-            var captchaResponse = JSON.parse(chunk);
+            const captchaResponse = JSON.parse(chunk);
             if (captchaResponse.success) {
-                var sns = new AWS.SNS();
                 delete input_data['g-recaptcha-response'];
                 var message = "";
                 Object.keys(input_data).forEach(function(key) {
                    message += key+':\n';
                    message += '\t'+input_data[key]+'\n\n';
                 });
-                var params = {
+                const params = {
                     Message: message,
                     Subject: process.env.Subject,
                     TopicArn: process.env.ContactUsSNSTopic
                 };
-                sns.publish(params, function (err, response) {
+                const snsClient = new SNSClient({});
+                const command = new PublishCommand(params);
+                snsClient.send(command, function (err, response) {
                     callback(null, {
                         statusCode: '200',
                         headers: {
