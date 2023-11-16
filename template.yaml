@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Parameters:
   DomainName:
@@ -31,10 +31,20 @@ Parameters:
     Type: String
     Description: SSL Certificate ARN
     Default: None
+  DeployWebFiles:
+    Type: String
+    Description: Deploy web files to S3
+    Default: 'true'
+    AllowedValues:
+      - true
+      - false
 Conditions:
   IsUsEast1: !Equals 
     - !Ref AWS::Region
     - us-east-1
+  IsDeployWebFiles: !Equals
+    - !Ref DeployWebFiles
+    - true
 Resources:
   ContactUsSNSTopic:
     Type: AWS::SNS::Topic
@@ -103,18 +113,20 @@ Resources:
           Action: sts:AssumeRole
   DeploymentLayer:
     Type: AWS::Serverless::Application
+    Condition: IsDeployWebFiles
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:375983427419:applications/deploy-to-s3
         SemanticVersion: 2.4.2
   SiteSource:
     Type: AWS::Serverless::Function
+    Condition: IsDeployWebFiles
     Properties:
       Layers:
         - !GetAtt DeploymentLayer.Outputs.Arn
       CodeUri: web/dist
       AutoPublishAlias: live
-      Runtime: python3.7
+      Runtime: python3.11
       Handler: deployer.resource_handler
       Timeout: 600
       Policies:
@@ -122,9 +134,10 @@ Resources:
             BucketName: !Ref S3Bucket
   DeploymentResource:
     Type: AWS::CloudFormation::CustomResource
+    Condition: IsDeployWebFiles
     Properties:
       ServiceToken: !GetAtt SiteSource.Arn
-      Version: !Ref "SiteSource.Version"
+      Version: !Ref SiteSource.Version
       TargetBucket: !Ref S3Bucket
 
       Substitutions:
@@ -143,29 +156,45 @@ Resources:
         IndexDocument: index.html
         ErrorDocument: error.html
   BucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
+    Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref S3Bucket
       PolicyDocument:  
         Statement:  
-        - Action: 's3:GetObject'
-          Effect: "Allow"  
-          Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
-          Principal: 
-            AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontDistributionOriginAccessIdentity}" 
+        - Action: s3:GetObject
+          Effect: Allow 
+          Resource: !Sub ${S3Bucket.Arn}/*
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+        - Effect: Deny
+          Principal: '*'
+          Action: 's3:*'
+          Resource: 
+            - !Sub ${S3Bucket.Arn}/*
+            - !GetAtt S3Bucket.Arn
+          Condition:
+            Bool: 
+              AWS:SecureTransport: false
   SSLCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties: 
-      DomainName: !Sub '${HostName}.${DomainName}'
+      DomainName: !Sub ${HostName}.${DomainName}
       DomainValidationOptions:
-      - DomainName: !Sub '${HostName}.${DomainName}'
+      - DomainName: !Sub ${HostName}.${DomainName}
         HostedZoneId: !Ref HostedZoneId
       ValidationMethod: DNS
-  CloudFrontDistributionOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+  CloudFrontDistributionOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
     Properties: 
-      CloudFrontOriginAccessIdentityConfig: 
-        Comment: !Sub ${AWS::StackName}-access-identity
+      OriginAccessControlConfig: 
+        Description: Access control for CloudFront distribution
+        Name: !Sub ${AWS::StackName}-access-control
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -173,8 +202,9 @@ Resources:
         Origins:
         - DomainName: !GetAtt S3Bucket.DomainName
           Id: !Ref S3Bucket
+          OriginAccessControlId: !GetAtt CloudFrontDistributionOriginAccessControl.Id
           S3OriginConfig:
-            OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontDistributionOriginAccessIdentity}
+            OriginAccessIdentity: ''
         Enabled: 'true'
         HttpVersion: http2
         Aliases:
@@ -195,12 +225,17 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !If [IsUsEast1, !Ref SSLCertificate, !Ref SSLCertificateArn]
           SslSupportMethod: sni-only
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 404
+            ResponsePagePath: /404.html
+            ErrorCachingMinTTL: 300
   DNSRecord:
-    Type: 'AWS::Route53::RecordSetGroup'
+    Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneId: !Ref HostedZoneId
       RecordSets:
-        - Name: !Sub '${HostName}.${DomainName}.'
+        - Name: !Sub ${HostName}.${DomainName}.
           Type: A
           AliasTarget:
             HostedZoneId: Z2FDTNDATAQYW2
@@ -235,7 +270,7 @@ Resources:
 Outputs:
   ApiUrl:
     Description: URL of your API endpoint
-    Value: !Sub "https://${ContactUsFunctionApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub https://${ContactUsFunctionApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
   CloudFrontDistributionId:
     Description: CloudFront Distribution ID
     Value: !Ref CloudFrontDistribution
