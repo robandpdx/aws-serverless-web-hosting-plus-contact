@@ -31,10 +31,6 @@ Parameters:
     Type: String
     Description: SSL Certificate ARN
     Default: None
-  DeployWebFiles:
-    Type: String
-    Description: Deploy web files to S3
-    Default: 'true'
     AllowedValues:
       - true
       - false
@@ -42,9 +38,6 @@ Conditions:
   IsUsEast1: !Equals 
     - !Ref AWS::Region
     - us-east-1
-  IsDeployWebFiles: !Equals
-    - !Ref DeployWebFiles
-    - true
 Resources:
   ContactUsSNSTopic:
     Type: AWS::SNS::Topic
@@ -111,44 +104,6 @@ Resources:
             - lambda.amazonaws.com
             - edgelambda.amazonaws.com
           Action: sts:AssumeRole
-  DeploymentLayer:
-    Type: AWS::Serverless::Application
-    Condition: IsDeployWebFiles
-    Properties:
-      Location:
-        ApplicationId: arn:aws:serverlessrepo:us-east-1:375983427419:applications/deploy-to-s3
-        SemanticVersion: 2.4.2
-  SiteSource:
-    Type: AWS::Serverless::Function
-    Condition: IsDeployWebFiles
-    Properties:
-      Layers:
-        - !GetAtt DeploymentLayer.Outputs.Arn
-      CodeUri: web/dist
-      AutoPublishAlias: live
-      Runtime: python3.11
-      Handler: deployer.resource_handler
-      Timeout: 600
-      Policies:
-        - S3FullAccessPolicy:
-            BucketName: !Ref S3Bucket
-  DeploymentResource:
-    Type: AWS::CloudFormation::CustomResource
-    Condition: IsDeployWebFiles
-    Properties:
-      ServiceToken: !GetAtt SiteSource.Arn
-      Version: !Ref SiteSource.Version
-      TargetBucket: !Ref S3Bucket
-
-      Substitutions:
-        FilePattern: "*.html"
-        Values:
-          CONTACT_API: !Ref ContactUsFunctionApi
-          REGION: !Ref AWS::Region
-          CAPTCHA_SITE_KEY: !Ref ReCaptchaClientSecret
-          CANONICAL_URL: !Sub https://${HostName}.${DomainName}/
-      Acl: 'private'
-      CacheControlMaxAge: 600
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
