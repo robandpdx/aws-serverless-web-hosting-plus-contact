@@ -17,9 +17,6 @@ Parameters:
   ToEmailAddress:
     Type: String
     Description: Email address you want contact form submittions to go to
-  ReCaptchaClientSecret:
-    Type: String
-    Description: Your Google reCAPTCHA client secret
   ReCaptchaServerSecret:
     Type: String
     Description: Your Google reCAPTCHA server secret
