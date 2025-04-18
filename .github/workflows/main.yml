@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup Node.js environment
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
 
     - name: Running npm install and installing gulp
       run: |
@@ -51,7 +51,7 @@ jobs:
         AWS_REGION: <region>
         SOURCE_DIR: web/dist
     - name: Invalidate Cloudfront
-      uses: chetan/invalidate-cloudfront-action@v1.2
+      uses: chetan/invalidate-cloudfront-action@v2
       env:
         DISTRIBUTION: <cloudfront-dist-id>
         PATHS: '/*'

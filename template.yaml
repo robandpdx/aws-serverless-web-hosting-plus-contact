@@ -28,9 +28,6 @@ Parameters:
     Type: String
     Description: SSL Certificate ARN
     Default: None
-    AllowedValues:
-      - true
-      - false
 Conditions:
   IsUsEast1: !Equals 
     - !Ref AWS::Region
@@ -64,7 +61,7 @@ Resources:
       Description: Contact us form processor
       Handler: index.handler
       CodeUri: src/contactUsFormProcessor
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Timeout: 5
       Policies:
         - SNSPublishMessagePolicy:
@@ -89,7 +86,7 @@ Resources:
       Description: CloudFront S3 index.html edge lambda
       Handler: index.handler
       CodeUri: src/cloudFrontS3IndexHtml
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Timeout: 5
       AutoPublishAlias: riznob
       AssumeRolePolicyDocument:

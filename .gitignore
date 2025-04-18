@@ -6,3 +6,5 @@ vendor
 css
 .DS_Store
 web/dist
+.op
+.envrc
