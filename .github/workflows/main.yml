@@ -8,48 +8,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4
+    - uses: actions/checkout@v6
+    - name: Set up Ruby # for Jekyll
+      uses: ruby/setup-ruby@v1
       with:
-        node-version: '22'
-
-    - name: Running npm install and installing gulp
-      run: |
-        cd web
-        npm install
-    - name: Running build
-      run: |
-        cd web
-        npm run build
-  check-secret:
-    runs-on: ubuntu-latest
-    outputs:
-      deploy-secrets: ${{ steps.deploy-secrets.outputs.defined }}
-    steps:
-        - id: deploy-secrets
-          if: "${{ env.DEPLOY_SECRETS != '' }}"
-          run: echo "::set-output name=defined::true"
-          env:
-              MY_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  deploy:
-    needs: check-secret
-    runs-on: ubuntu-latest
-    if: needs.check-secret.outputs.deploy-secrets == 'true'
-    steps:
+        ruby-version: 2.7
+    - name: Install dependencies
+      run: bundle install
+    - name: Build site
+      run: bundle exec jekyll build
     - name: S3 Sync
-      uses: jakejarvis/s3-sync-action@v0.5.1
-      with:
-        args: --delete --exclude 'scss/*' --exclude 'node_modules/*' --exclude package.json --exclude package-lock.json --exclude requirements.txt --exclude gulpfile.js
+      run: |
+        aws s3 sync ${{ github.workspace }}/_site s3://$AWS_S3_BUCKET --delete
       env:
-        AWS_S3_BUCKET: <s3-bucket>
+        AWS_S3_BUCKET: <s3-bucket-name>
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: <region>
-        SOURCE_DIR: web/dist
+        SOURCE_DIR: _site
     - name: Invalidate Cloudfront
       uses: chetan/invalidate-cloudfront-action@v2
       env:

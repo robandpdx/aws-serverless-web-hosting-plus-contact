@@ -14,7 +14,6 @@ This project solves all of this by providing an [AWS sam](https://aws.amazon.com
 - IAM user with permissions to deploy from github actions
 
 This stack does not deploy a website. You'll need to deploy your static site to the s3 bucket after you deploy this stack.
-The cloudformation template uses the [deploy-to-s3 app](https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:375983427419:applications~deploy-to-s3) from the [serverless application repository](https://aws.amazon.com/serverless/serverlessrepo/).
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/riznob/aws-serverless-web-hosting-plus-contact/blob/master/LICENSE)
 
@@ -68,26 +67,13 @@ Leave the `EdgeLambdaArn` and `SSLCertificateArn` blank.
 | SAM configuration environment [default]: | Y |
 
 ## GitHub actions continuous delivery
-Before you setup github actions, go grab the index.html from your S3 bucket and check it into git. During the deploy of the cloudformation template, the API gateway URL and google reCaptcha client key values were put into that file.
+Use the [GitHub actions worklflow](.github/workflows/main.yml) to setup continuous delivery from your website GitHub repo to your S3 bucket. This workflow is made to build a [Jekyll](https://jekyllrb.com/) website, but you can modify it to build your static site generator of choice.
 
-Look at the output of the cloudformation stack to find the `IAMUser`. Then setup [AWS programatic credentials](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for that user. AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, should be [set as encrypted secrets on your github repo](https://docs.github.com/en/actions/reference/encrypted-secrets).
+Look at the output of the cloudformation stack to find the `IAMUser`. Then setup [AWS programatic credentials](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for that user. AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, should be [set as encrypted secrets on your website GitHub repo](https://docs.github.com/en/actions/reference/encrypted-secrets).
 
 Look at the output of the cloudformation stack to find the `CloudFrontDistributionId` and `S3Bucket`. Edit `.github/workflows/main.yml` with those values. Region too.
 
-## Running the site locally
-1. run `cd web`
-1. run `npm install`
-2. run `gulp`
-3. run `gulp dev`
-
-#### Gulp Tasks
-- `gulp` the default task that builds everything
-- `gulp dev` browserSync opens the project in your default browser and live reloads when changes are made
-- `gulp css` compiles SCSS files into CSS and minifies the compiled CSS
-- `gulp js` minifies the themes JS file
-- `gulp vendor` copies dependencies from node_modules to the vendor directory
-
-NOTE: Delete the web/node_modules directory or the deploy will fail due to too much crap.
+Look at the output of the cloudformation stack to find the `APIUrl`. Use the `APIUrl` in your contact form to post the form contents.
 
 ## Deleting the stack
 When you delete the stack it will probably fail to delete. Don't worry. You need to do two things after the stack fails to delete:
