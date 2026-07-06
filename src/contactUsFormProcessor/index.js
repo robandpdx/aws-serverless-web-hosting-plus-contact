@@ -29,8 +29,8 @@ exports.handler = function (event, context, callback) {
                 delete input_data['g-recaptcha-response'];
                 var message = "";
                 Object.keys(input_data).forEach(function(key) {
-                   message += key+':\n';
-                   message += '\t'+input_data[key]+'\n\n';
+                   message += key+': ';
+                   message += input_data[key]+'\n';
                 });
                 const params = {
                     Message: message,
