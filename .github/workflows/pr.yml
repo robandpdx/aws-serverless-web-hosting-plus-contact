@@ -10,19 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup Node.js environment
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '22'
 
-    - name: Running npm install and installing gulp
-      run: |
-        cd web
-        npm install
-    - name: Running build
-      run: |
-        cd web
-        npm run build
-  
+    - name: Running sam build
+      run: sam build --use-container
