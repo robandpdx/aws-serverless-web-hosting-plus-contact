@@ -24,7 +24,8 @@ exports.handler = function (event, context, callback) {
         res.setEncoding('utf8');
         res.on('data', function(chunk) {
             const captchaResponse = JSON.parse(chunk);
-            if (captchaResponse.success) {
+            // Check both success and score threshold (0.5 is recommended by Google)
+            if (captchaResponse.success && captchaResponse.score > 0.5) {
                 delete input_data['g-recaptcha-response'];
                 var message = "";
                 Object.keys(input_data).forEach(function(key) {
