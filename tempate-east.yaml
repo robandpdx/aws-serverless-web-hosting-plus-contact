@@ -22,7 +22,7 @@ Resources:
       Description: CloudFront S3 index.html edge lambda
       Handler: index.handler
       CodeUri: src/cloudFrontS3IndexHtml
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Timeout: 5
       AutoPublishAlias: riznob
       AssumeRolePolicyDocument:

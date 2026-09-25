@@ -1,8 +1,14 @@
 {
-	"name": "Python 3.13 Node.js 22 aws sam-cli",
-	"build": {
-		"dockerfile": "Dockerfile"
+	"name": "Python 3.13 Node.js 24 aws sam-cli",
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/node:2": {
+			"version": "24"
+		},
+		"ghcr.io/devcontainers/features/aws-cli:1": {},
+		"ghcr.io/customink/codespaces-features/sam-cli:1": {}
 	},
+	"remoteUser": "vscode",
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
@@ -20,5 +26,5 @@
 	],
 
 	// Setup aws creds via mount
-	"mounts": ["source=${localEnv:HOME}/.aws,target=/home/sam-user/.aws,type=bind,consistency=cached"]
+	"mounts": ["source=${localEnv:HOME}/.aws,target=/home/vscode/.aws,type=bind,consistency=cached"]
 }

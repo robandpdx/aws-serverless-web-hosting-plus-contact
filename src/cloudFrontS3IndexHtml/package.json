@@ -2,6 +2,7 @@
     "name": "cloudFront-s3-index-html",
     "description": "CloudFront S3 index.html edge lambda",
     "version": "1.0.0",
+    "type": "module",
     "author": "Rob Anderson <riznob@gmail.com>",
     "license": "MIT",
     "dependencies": {
